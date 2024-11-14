@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multiple Bar Charts</title>
+  <style>
+    .chartBox {
+      width: 600px;
+      margin: 20px auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="chartBox">
+    <h3>Vertical Bar Chart</h3>
+    <canvas id="verticalChart"></canvas>
+  </div>
+
+  <div class="chartBox">
+    <h3>Horizontal Bar Chart with Adjusted Labels</h3>
+    <canvas id="horizontalChart"></canvas>
+  </div>
+
+  <div class="chartBox">
+    <h3>Horizontal Bar Chart with Custom Config and Data</h3>
+    <canvas id="customConfigChart"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
+  <script>
+    // Utility functions to mimic `Utils` functionality
+    function months({ count }) {
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July"];
+      return monthNames.slice(0, count);
+    }
+
+    function numbers({ count, min, max }) {
+      return Array.from({ length: count }, () => Math.floor(Math.random() * (max - min + 1)) + min);
+    }
+
+    function transparentize(color, opacity) {
+      const alpha = Math.round(opacity * 255);
+      return color.replace('rgb', 'rgba').replace(')', `, ${opacity})`);
+    }
+
+    // Shared data for first two charts
+    const sharedData = {
+      labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+      datasets: [{
+        label: '# of Votes',
+        data: [12, 19, 3, 5, 2, 3], // Values for the bar chart
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.2)', 
+          'rgba(54, 162, 235, 0.2)', 
+          'rgba(255, 206, 86, 0.2)', 
+          'rgba(75, 192, 192, 0.2)', 
+          'rgba(153, 102, 255, 0.2)', 
+          'rgba(255, 159, 64, 0.2)'
+        ],
+        borderColor: [
+          'rgba(255, 99, 132, 1)', 
+          'rgba(54, 162, 235, 1)', 
+          'rgba(255, 206, 86, 1)', 
+          'rgba(75, 192, 192, 1)', 
+          'rgba(153, 102, 255, 1)', 
+          'rgba(255, 159, 64, 1)'
+        ],
+        borderWidth: 1
+      }]
+    };
+
+    // Vertical Chart Configuration
+    new Chart(document.getElementById('verticalChart'), {
+      type: 'bar',
+      data: {
+        ...sharedData,
+        datasets: sharedData.datasets.map(dataset => ({
+          ...dataset,
+          borderRadius: 10 // Rounded corners
+        }))
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            color: 'blue',
+            anchor: 'end',
+            align: 'end',
+            formatter: (value, context) => context.chart.data.labels[context.dataIndex],
+            offset: 5
+          }
+        },
+        scales: {
+          x: { display: false },
+          y: { display: false }
+        },
+        indexAxis: 'x',
+      },
+      plugins: [ChartDataLabels]
+    });
+
+    // Horizontal Chart with verticalOptions applied
+    const verticalOptions = {
+      plugins: {
+        datalabels: {
+          color: 'blue',
+          anchor: 'center',
+          align: 'top',
+          formatter: (value, context) => context.chart.data.labels[context.dataIndex],
+          offset:5
+        }
+      },
+      scales: {
+        x: { display: false },
+        y: { display: false }
+      },
+      indexAxis: 'y', // Horizontal chart (bars drawn along the y-axis)
+    };
+
+    new Chart(document.getElementById('horizontalChart'), {
+      type: 'bar',
+      data: {
+        ...sharedData,
+        datasets: sharedData.datasets.map(dataset => ({
+          ...dataset,
+          barThickness: 20,
+          borderRadius: 10
+        }))
+      },
+      options: verticalOptions,
+      plugins: [ChartDataLabels]
+    });
+
+    // Custom Configuration and Data for Third Chart
+    const DATA_COUNT = 7;
+    const NUMBER_CFG = { count: DATA_COUNT, min: -100, max: 100 };
+    const labels = months({ count: DATA_COUNT });
+    const customData = {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Dataset 1',
+          data: numbers(NUMBER_CFG),
+          borderColor: 'rgba(255, 99, 132)',
+          backgroundColor: transparentize('rgb(255, 99, 132)', 0.5),
+        },
+        {
+          label: 'Dataset 2',
+          data: numbers(NUMBER_CFG),
+          borderColor: 'rgba(54, 162, 235)',
+          backgroundColor: transparentize('rgb(54, 162, 235)', 0.5),
+        }
+      ]
+    };
+
+    const customConfig = {
+      type: 'bar',
+      data: customData,
+      options: {
+        indexAxis: 'y',
+        elements: {
+          bar: {
+            borderWidth: 2,
+          }
+        },
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'right',
+          },
+          title: {
+            display: true,
+            text: 'Chart.js Horizontal Bar Chart'
+          }
+        }
+      }
+    };
+    new Chart(document.getElementById('customConfigChart'), customConfig);
+
+  </script>
+</body>
+</html>
